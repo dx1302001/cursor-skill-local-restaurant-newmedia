@@ -1,70 +1,90 @@
-# Cursor Skill: 本地餐饮新媒体运营
+# cursor-skill-local-restaurant-newmedia
 
-一套完整的本地餐饮（面馆/小吃店/餐厅）社交媒体内容生产工具包。覆盖小红书、微信公众号、抖音、视频号四平台，内置可灵 AI 配图提示词库，附带实战案例。
+Cursor Agent Skill：**本地餐饮 / 面馆多平台新媒体文案生成**
 
-## 安装
+一键生成视频号、公众号、小红书、抖音全套文案 + 排期 + CONTEXT 交接包，并自动与旧方案去重。
+
+## Install
+
+### Cursor（个人技能）
 
 ```bash
-# 复制到 Cursor skills 目录
-cp -r ./* ~/.cursor/skills/local-restaurant-newmedia/
-
-# 或者直接 clone 到 Cursor skills 目录
-git clone https://github.com/dx1302001/cursor-skill-local-restaurant-newmedia.git ~/.cursor/skills/local-restaurant-newmedia/
+git clone https://github.com/dx1302001/cursor-skill-local-restaurant-newmedia.git
 ```
 
-## 包含的技能
+将 `skill/` 目录复制到：
 
-### 1. restaurant-social-media — 餐饮多平台社媒内容生产
+- **Windows**: `%USERPROFILE%\.cursor\skills\local-restaurant-newmedia\`
+- **macOS/Linux**: `~/.cursor/skills/local-restaurant-newmedia/`
 
-从信息采集 → 分平台创作 → AI生图 → HTML预览 → 查重校对的全流程。
+或在本仓库目录执行：
 
-支持平台：
-- 小红书（种草笔记，150-300字，口语化+Emoji）
-- 微信公众号（长文推文，1500-2000字，专业有人情味）
-- 抖音（短视频脚本，25-40秒，快节奏卡点）
-- 微信视频号（温情故事，60-120秒，私域裂变）
+```powershell
+# Windows PowerShell
+$dest = "$env:USERPROFILE\.cursor\skills\local-restaurant-newmedia"
+New-Item -ItemType Directory -Force -Path $dest | Out-Null
+Copy-Item -Path ".\skill\*" -Destination $dest -Recurse -Force
+```
 
-### 2. xhs-photographer-note — 小红书推广笔记制作
+### 验证
 
-从零交付小红书笔记：搜参考 → 写文案 → HTML手机端预览 → 可灵AI配图 → 发布。
+在 Cursor 中对 Agent 说：
 
-同时支持：
-- 人像摄影约拍推广（情绪人像、胶片感、自然光）
-- 餐饮美食种草推广（面馆、小吃店、餐厅）
+> 用 local-restaurant-newmedia skill，给一家深圳面馆写视频号5条、抖音5条
 
-### 3. kling-prompt-library — 可灵 AI 配图提示词库
+## Skill triggers
 
-分类完整的食物摄影 + 人像摄影提示词：
-- 面食特写（芝麻酱淋面、筷子夹面、蒸汽动态）
-- 食材制作（芝麻现炒、香料醋熬制、蒸笼出笼）
-- 人像摄影（光影情绪、大光圈电影感、胶片氛围）
-- 场景环境（小店内部、店铺外景、凌晨备料）
+Agent 会在以下场景自动适用本技能：
 
-## 实战案例
+- 餐饮 / 面馆 / 本地店新媒体文案
+- 视频号、公众号、小红书、抖音脚本
+- 6-7 月运营方案、种草文案、去重续写
 
-`examples/20260619-poster/` — 深圳人像摄影师小红书推广笔记
-- 小红书笔记 HTML 预览（手机端模拟）
-- 3张可灵AI生成的人像配图
-- 完整文案 + 评论区互动
-
-## 目录结构
+## Repository structure
 
 ```
-local-restaurant-newmedia/
 ├── README.md
-├── ai-skills/
-│   ├── restaurant-social-media.md      # 餐饮社媒技能
-│   ├── xhs-photographer-note.md        # 小红书推广技能
-│   └── kling-prompt-library.md         # 可灵提示词库
-├── examples/
-│   └── 20260619-poster/
-│       ├── xhs-note.html               # 小红书笔记预览
-│       ├── kling-prompts.md            # 配图提示词
-│       ├── cover.jpg / image2.jpg / image3.jpg
-└── templates/                          # (未来) HTML模板
+├── LICENSE
+└── skill/
+    ├── SKILL.md        # 主技能文件（Agent 读取）
+    ├── reference.md    # 模板与字段规范
+    └── examples.md     # 老陕面馆参考样例
 ```
 
-## 依赖
+## What it produces
 
-- 可灵 API (klingai.com) — AI 配图生成
-- 现代浏览器 — HTML 预览
+默认输出 7 个文件：
+
+| 文件 | 内容 |
+|------|------|
+| `CONTEXT_打包交接.md` | 新对话续接包 |
+| `00_使用说明与去重对照.md` | 去重对照 |
+| `01_视频号文案_10条.md` | 分镜口播稿 |
+| `02_公众号文案_10篇_含配图参考.md` | 长文 + 配图 brief |
+| `03_小红书笔记_3篇_含封面布局.md` | 种草 + 6 图布局 |
+| `04_抖音短视频脚本_10条.md` | 分镜 + DOU+ 建议 |
+| `05_6-7月发布排期建议.md` | 交叉排期 |
+
+条数可按需求调整。
+
+## Author
+
+许大新新媒体运营 · 样例客户：老陕面馆（深圳宝安区）
+
+## Push to GitHub
+
+本地仓库已初始化并完成首次 commit。若尚未上传：
+
+```bash
+cd C:\Users\Administrator\cursor-skill-local-restaurant-newmedia
+gh auth login
+gh repo create cursor-skill-local-restaurant-newmedia --public --source=. --remote=origin --push
+```
+
+或双击运行 `push-to-github.bat`（Windows）。
+
+仓库将创建在：`https://github.com/dx1302001/cursor-skill-local-restaurant-newmedia`
+
+## License
+
+MIT
