@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小红书笔记预览 — 人像摄影</title>
+<style>
+:root {
+  --red:        #FF2442;
+  --red-light:  #FFF0F3;
+  --bg:         #FFFFFF;
+  --text:       #1A1A1A;
+  --text-sub:   #8E8E93;
+  --border:     #F0F0F0;
+  --tag-bg:     #F5F5F7;
+  --like-red:   #FF2D55;
+  --serif: ui-serif, Georgia, "Noto Serif SC", "Songti SC", serif;
+  --sans: system-ui, -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #F2F2F7;
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px 80px;
+}
+
+/* 手机卡片容器 */
+.phone-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
+
+/* ── 头部：用户信息 ── */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+}
+.avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D4A574, #C4906A);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 20px; flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.username { font-size: 15px; font-weight: 600; color: var(--text); }
+.user-meta { font-size: 12px; color: var(--text-sub); margin-top: 1px; }
+.follow-btn {
+  flex-shrink: 0;
+  background: var(--red); color: #fff;
+  border: none; border-radius: 20px;
+  padding: 6px 18px; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── 图片轮播 ── */
+.image-carousel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+.carousel-track {
+  display: flex;
+  width: 100%; height: 100%;
+  transition: transform 0.35s ease;
+}
+.carousel-slide {
+  min-width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.carousel-slide img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+/* 精美 CSS 渐变模拟 — 金色时刻摄影氛围 */
+.slide-bg {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.85);
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.slide-bg.bg-cover {
+  background: linear-gradient(160deg, #C4906A 0%, #D4A574 15%, #E8C9A0 35%, #F5DFC0 55%, #8B6B4A 85%, #5C3D2E 100%);
+}
+.slide-bg.bg-closeup {
+  background: linear-gradient(150deg, #A89080 0%, #C4B5A8 20%, #D9CDC0 45%, #F0E8E0 65%, #8B7D72 90%, #5C5046 100%);
+}
+.slide-bg.bg-full {
+  background: linear-gradient(145deg, #B8A080 0%, #D4C4A8 18%, #E8DCC8 40%, #F5EDE0 60%, #9B8B6A 82%, #6B5B3E 100%);
+}
+.slide-bg::before {
+  content: '';
+  position: absolute; top: -30%; right: -20%;
+  width: 70%; height: 60%;
+  background: radial-gradient(ellipse, rgba(255,220,150,0.4) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.slide-bg::after {
+  content: '';
+  position: absolute; bottom: -15%; left: -10%;
+  width: 60%; height: 40%;
+  background: radial-gradient(ellipse, rgba(255,200,130,0.25) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.slide-bg .icon { font-size: 42px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.15)); z-index: 1; }
+.slide-bg .label { font-size: 12px; opacity: 0.8; z-index: 1; letter-spacing: 0.05em; }
+.slide-bg .pending { font-size: 10px; opacity: 0.5; z-index: 1; margin-top: 2px; }
+.slide-dots {
+  position: absolute; bottom: 14px;
+  left: 50%; transform: translateX(-50%);
+  display: flex; gap: 6px; z-index: 2;
+}
+.slide-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+  transition: all 0.25s;
+}
+.slide-dot.active {
+  background: #fff;
+  width: 18px;
+  border-radius: 3px;
+}
+.carousel-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(8px);
+  border: none; color: #fff; font-size: 18px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  z-index: 2; transition: background 0.2s;
+}
+.carousel-nav:hover { background: rgba(255,255,255,0.35); }
+.carousel-nav.prev { left: 10px; }
+.carousel-nav.next { right: 10px; }
+
+/* ── 互动栏 ── */
+.actions {
+  display: flex; align-items: center;
+  padding: 12px 16px 0;
+  gap: 18px;
+}
+.action-btn {
+  background: none; border: none;
+  font-size: 24px; cursor: pointer;
+  display: flex; align-items: center;
+  transition: transform 0.15s;
+  line-height: 1;
+}
+.action-btn:active { transform: scale(0.9); }
+.action-btn.liked { color: var(--like-red); }
+.action-btn.right { margin-left: auto; }
+
+/* ── 正文 ── */
+.content { padding: 8px 16px 16px; }
+.likes-preview { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.caption {
+  font-size: 15px; line-height: 1.7; color: var(--text);
+  white-space: pre-line;
+}
+.caption .highlight { color: var(--red); font-weight: 500; }
+.caption em { font-style: normal; color: #D4A574; }
+.topic-tag {
+  display: inline-block;
+  color: #5B7FA5; font-size: 14px;
+  margin-right: 4px;
+}
+.hashtags {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.hashtag {
+  font-size: 12px; color: var(--text-sub);
+  background: var(--tag-bg);
+  padding: 4px 10px; border-radius: 12px;
+}
+
+/* ── 评论区 ── */
+.comments {
+  border-top: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.comment { display: flex; gap: 10px; align-items: flex-start; }
+.comment-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #E8E8ED;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.comment-body { flex: 1; min-width: 0; }
+.comment-name { font-size: 12px; color: var(--text-sub); margin-bottom: 2px; }
+.comment-text { font-size: 14px; color: var(--text); line-height: 1.5; }
+.comment-time { font-size: 11px; color: #C7C7CC; margin-top: 3px; }
+
+/* ── 底部发布栏 ── */
+.publish-bar {
+  display: flex; align-items: center;
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+  gap: 10px;
+}
+.publish-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #D4A574, #C4906A);
+  flex-shrink: 0;
+}
+.publish-input {
+  flex: 1;
+  background: #F5F5F7;
+  border: none; border-radius: 20px;
+  padding: 10px 16px; font-size: 14px;
+  color: var(--text-sub);
+  outline: none;
+}
+.publish-actions { display: flex; gap: 14px; font-size: 20px; color: var(--text-sub); }
+
+/* 桌面端备注 */
+.desktop-note {
+  text-align: center;
+  margin-top: 32px;
+  color: #999;
+  font-size: 13px;
+}
+.desktop-note a { color: var(--red); text-decoration: none; }
+
+/* 可灵配图按钮 */
+.kling-section {
+  margin: 0 16px 16px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #FFF5F7, #FFF0F3);
+  border: 1.5px dashed #FFB3C1;
+  border-radius: 12px;
+  text-align: center;
+}
+.kling-section p { font-size: 13px; color: #D97757; margin: 0 0 8px; }
+.kling-btn {
+  background: var(--red); color: #fff;
+  border: none; border-radius: 20px;
+  padding: 8px 24px; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+.kling-btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<div class="phone-card">
+
+  <!-- 头部 -->
+  <div class="header">
+    <div class="avatar">📷</div>
+    <div class="user-info">
+      <div class="username">大新影视传媒 NeoStudio</div>
+      <div class="user-meta">人像摄影师 · 深圳 · 已关注</div>
+    </div>
+    <button class="follow-btn">+ 关注</button>
+  </div>
+
+  <!-- 图片轮播 -->
+  <div class="image-carousel" id="carousel">
+    <div class="carousel-track" id="track">
+      <div class="carousel-slide" data-index="0">
+        <img src="cover.jpg" alt="光影情绪人像" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="slide-bg bg-cover" style="display:none">
+          <div class="icon">🌅</div>
+          <div class="label">光影情绪人像</div>
+          <div class="pending">— 可灵 AI 待生成 —</div>
+        </div>
+      </div>
+      <div class="carousel-slide" data-index="1">
+        <img src="image2.jpg" alt="大光圈电影感人像" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="slide-bg bg-closeup" style="display:none">
+          <div class="icon">📸</div>
+          <div class="label">大光圈电影感人像</div>
+          <div class="pending">— 可灵 AI 待生成 —</div>
+        </div>
+      </div>
+      <div class="carousel-slide" data-index="2">
+        <img src="image3.jpg" alt="胶片感氛围" onload="this.style.display='block';this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="slide-bg bg-full" style="display:none">
+          <div class="icon">✨</div>
+          <div class="label">胶片感氛围</div>
+          <div class="pending">— 可灵 AI 待生成 —</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-dots" id="dots">
+      <div class="slide-dot active"></div>
+      <div class="slide-dot"></div>
+      <div class="slide-dot"></div>
+    </div>
+    <button class="carousel-nav prev" onclick="prevSlide()">‹</button>
+    <button class="carousel-nav next" onclick="nextSlide()">›</button>
+  </div>
+
+  <!-- 互动栏 -->
+  <div class="actions">
+    <button class="action-btn" id="likeBtn" onclick="toggleLike()">🤍</button>
+    <button class="action-btn">💬</button>
+    <button class="action-btn">📤</button>
+    <button class="action-btn right">🔖</button>
+  </div>
+
+  <!-- 点赞数 -->
+  <div class="content">
+    <div class="likes-preview" id="likeCount">2,847 次赞</div>
+    <div class="caption">
+<span class="highlight">「 你远比你想象中更美 」</span>
+
+拍了七年人像，听过最多的一句话是：
+「 我不上相，拍出来肯定不好看。」
+
+可是你知道吗？
+那些让你觉得自己不够好的瞬间——
+侧脸时若隐若现的轮廓，
+逆光里被风掀起的发丝，
+低头浅笑时不自觉上扬的嘴角，
+——恰恰是我镜头里最珍贵的画面。
+
+<em>人像摄影最美的部分，从来不是完美。</em>
+是你放松下来那一刻的真实。
+是快门落下前，你忘记镜头存在的那一秒。
+
+这组照片是在一个普通的夏日傍晚拍的。
+没有复杂的布光，没有刻意的造型。
+只是让模特在光影里自由地走、转、停。
+黄昏的光会替我做大部分的事情——
+它会在你的发梢镀一层金边，
+在你的眼眸里藏一粒星。
+
+（滑动看完整组图👉 第三张是我的最爱）
+
+<span class="topic-tag">#人像摄影</span>
+<span class="topic-tag">#情绪人像</span>
+
+说点走心的👇
+找我拍照，我不只给你照片。
+我帮你看见那个你一直忽略的自己。
+那个在平凡日常里，其实闪着光的你。
+
+<span class="highlight">坐标深圳 | 接约拍 | 周边地区可约 | 创作互勉也可聊</span>
+私信回复「𝟮𝟬𝟮𝟰」获取价目表 ✨
+    </div>
+
+    <div class="hashtags">
+      <span class="hashtag">#人像摄影</span>
+      <span class="hashtag">#情绪人像</span>
+      <span class="hashtag">#深圳约拍</span>
+      <span class="hashtag">#胶片感</span>
+      <span class="hashtag">#光影人像</span>
+      <span class="hashtag">#记录美好</span>
+      <span class="hashtag">#独立摄影师</span>
+    </div>
+  </div>
+
+  <!-- 可灵配图提示 -->
+  <div class="kling-section" style="background: linear-gradient(135deg, #F0FFF0, #E8F5E9); border-color: #A5D6A7;">
+    <p style="color:#4CAF50;">✅ 3 张配图由 <strong>可灵 AI</strong> 生成完毕</p>
+    <p style="font-size:12px;color:#888;">刷新页面即可查看完整效果</p>
+  </div>
+
+  <!-- 评论区 -->
+  <div class="comments">
+    <div class="comment">
+      <div class="comment-avatar">🌸</div>
+      <div class="comment-body">
+        <div class="comment-name">夏日限定桃子</div>
+        <div class="comment-text">太有氛围感了吧！！第三张真的绝了，光落在脸上的感觉好温柔 😭</div>
+        <div class="comment-time">2小时前 · 回复</div>
+      </div>
+    </div>
+    <div class="comment">
+      <div class="comment-avatar">📸</div>
+      <div class="comment-body">
+        <div class="comment-name">大新影视传媒 NeoStudio <span style="color:var(--red);font-size:11px;">作者</span></div>
+        <div class="comment-text">谢谢喜欢！黄昏的光真的很神奇，不需要太多技巧，等对了时间就好 ✨</div>
+        <div class="comment-time">1小时前 · 回复</div>
+      </div>
+    </div>
+    <div class="comment">
+      <div class="comment-avatar">🌙</div>
+      <div class="comment-body">
+        <div class="comment-name">月亮不营业</div>
+        <div class="comment-text">深圳的！私你了 求约拍排期～</div>
+        <div class="comment-time">30分钟前 · 回复</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发布栏 -->
+  <div class="publish-bar">
+    <div class="publish-avatar"></div>
+    <input class="publish-input" placeholder="说点什么吧..." readonly>
+    <div class="publish-actions">
+      <span>😊</span><span>📷</span><span>@</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="desktop-note">
+  📱 小红书笔记预览 · 配图待可灵生成后自动替换<br>
+  文件路径：<code>/Volumes/ MyD/20260619poster/xhs-note.html</code>
+</div>
+
+<script>
+// 图片轮播
+let currentSlide = 0;
+const totalSlides = 3;
+const track = document.getElementById('track');
+const dots = document.querySelectorAll('#dots .slide-dot');
+
+function updateCarousel() {
+  track.style.transform = `translateX(-${currentSlide * 100}%)`;
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
+function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateCarousel(); }
+function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateCarousel(); }
+
+// 点赞
+let liked = false;
+let likeCount = 2847;
+function toggleLike() {
+  liked = !liked;
+  const btn = document.getElementById('likeBtn');
+  const cnt = document.getElementById('likeCount');
+  if (liked) {
+    btn.innerHTML = '❤️'; btn.classList.add('liked');
+    cnt.textContent = (++likeCount).toLocaleString() + ' 次赞';
+  } else {
+    btn.innerHTML = '🤍'; btn.classList.remove('liked');
+    cnt.textContent = (--likeCount).toLocaleString() + ' 次赞';
+  }
+}
+
+// 触屏滑动
+let startX = 0;
+track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+track.addEventListener('touchend', e => {
+  const diff = startX - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+});
+</script>
+
+</body>
+</html>
